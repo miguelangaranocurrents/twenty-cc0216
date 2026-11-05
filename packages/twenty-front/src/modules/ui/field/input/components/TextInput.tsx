@@ -78,24 +78,30 @@ export const TextInput = ({
   const wrapperRef = useRef<HTMLInputElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
 
+  // Keep the raw text while typing so spaces between words survive; trimming only applies on submit
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setInternalText(getValue(event.target.value, shouldTrim));
-    onChange?.(getValue(event.target.value, shouldTrim));
+    setInternalText(event.target.value);
+    onChange?.(event.target.value);
   };
   useEffect(() => {
-    setInternalText(getValue(value, shouldTrim));
-  }, [value, shouldTrim]);
+    setInternalText(value);
+  }, [value]);
 
   useRegisterInputEvents({
     focusId: instanceId,
     inputRef: wrapperRef,
     copyRef: copyRef,
     inputValue: internalText,
-    onEnter,
-    onEscape,
-    onClickOutside,
-    onTab,
-    onShiftTab,
+    onEnter: onEnter && ((text: string) => onEnter(getValue(text, shouldTrim))),
+    onEscape:
+      onEscape && ((text: string) => onEscape(getValue(text, shouldTrim))),
+    onClickOutside:
+      onClickOutside &&
+      ((event: MouseEvent | TouchEvent, text: string) =>
+        onClickOutside(event, getValue(text, shouldTrim))),
+    onTab: onTab && ((text: string) => onTab(getValue(text, shouldTrim))),
+    onShiftTab:
+      onShiftTab && ((text: string) => onShiftTab(getValue(text, shouldTrim))),
   });
 
   return (
